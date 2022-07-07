@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:message_app/signinsignup_page/signup_page.dart';
 import '../service/auth.dart';
-import '../home_page.dart';
+import '../pages/home_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);

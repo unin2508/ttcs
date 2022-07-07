@@ -3,7 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:message_app/mainchat_page.dart';
+import 'package:message_app/pages/mainchat_page.dart';
 import 'package:message_app/service/database.dart';
 
 class SearchPage extends StatefulWidget {
@@ -81,8 +81,8 @@ class _SearchPageState extends State<SearchPage> {
                               MaterialPageRoute(
                                   builder: (context) => MainChatPage(
                                         uid_receiver: snapshot.data.docs[0].id,
-                                        name_receiver: snapshot.data.docs[0]
-                                            ['username'],
+                                        // name_receiver: snapshot.data.docs[0]
+                                        //     ['username'],
                                       )));
                         },
                         child: Container(

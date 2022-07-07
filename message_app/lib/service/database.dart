@@ -5,9 +5,12 @@ class DatabaseService {
       String uid, String username, String email, String imageurl) async {
     final CollectionReference userCollection =
         FirebaseFirestore.instance.collection("Users");
-    return await userCollection
-        .doc(uid)
-        .set({'username': username, 'email': email, 'imageurl': imageurl});
+    return await userCollection.doc(uid).set({
+      'username': username,
+      'email': email,
+      'imageurl': imageurl,
+      'createdOn': FieldValue.serverTimestamp()
+    });
   }
 
   searchUserByname(String name) async {

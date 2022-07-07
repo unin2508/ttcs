@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:message_app/service/auth.dart';
-import 'package:message_app/home_page.dart';
+import 'package:message_app/pages/home_page.dart';
 import 'package:message_app/service/database.dart';
 
 class SignupPage extends StatefulWidget {

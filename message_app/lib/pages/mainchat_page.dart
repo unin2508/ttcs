@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors, non_constant_identifier_names, curly_braces_in_flow_control_structures
 
+import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -8,12 +9,13 @@ import 'package:message_app/service/database.dart';
 
 class MainChatPage extends StatefulWidget {
   final String uid_receiver;
-  final String name_receiver;
+  // final String name_receiver;
 
-  const MainChatPage(
-      {Key? key, required this.uid_receiver, required this.name_receiver})
-      : super(key: key);
+  // const MainChatPage(
+  //     {Key? key, required this.uid_receiver, required this.name_receiver})
+  //     : super(key: key);
 
+  const MainChatPage({Key? key, required this.uid_receiver}) : super(key: key);
   @override
   State<MainChatPage> createState() => _MainChatPageState();
 }
@@ -28,26 +30,24 @@ class _MainChatPageState extends State<MainChatPage> {
     // ignore: todo
     // TODO: implement initState
     super.initState();
-    // FirebaseFirestore.instance
-    //     .collection('chats')
-    //     .where('users', isEqualTo: {userid: null, widget.uid_receiver: null})
-    //     .limit(1)
-    //     .get()
-    //     .then((value) async {
-    //       chatid = value.docs.single.id;
-    //       print('idchat:' + value.docs.single.id);
-    //     });
-    FirebaseFirestore.instance
+    checkuser();
+  }
+
+  void checkuser() async {
+    await FirebaseFirestore.instance
         .collection('chats')
         .where('users', isEqualTo: {widget.uid_receiver: null, userid: null})
         .limit(1)
         .get()
         .then((value) {
-          if (value.docs.isNotEmpty) {
-            chatid = value.docs.single.id;
-          } else {
+          if (value.docs.isNotEmpty)
+            setState(() {
+              chatid = value.docs.single.id;
+            });
+          else {
             FirebaseFirestore.instance.collection('chats').add({
-              'users': {widget.uid_receiver: null, userid: null}
+              'users': {widget.uid_receiver: null, userid: null},
+              'lastmsg': null
             }).then((value) {
               chatid = value.id;
             });
@@ -57,14 +57,6 @@ class _MainChatPageState extends State<MainChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    // FirebaseFirestore.instance
-    //     .collection('chats')
-    //     .where('users', isEqualTo: {userid: null, widget.uid_receiver: null})
-    //     .limit(1)
-    //     .get()
-    //     .then((value) {
-    //       setState(() => this.chatid = value.docs.single.id);
-    //     });
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -96,9 +88,9 @@ class _MainChatPageState extends State<MainChatPage> {
             .orderBy('createdOn', descending: true)
             .snapshots(),
         builder: (BuildContext context, AsyncSnapshot snapshot) {
-          if (snapshot.hasError) {
-            return Text("Has error");
-          }
+          // if (snapshot.hasError) {
+          //   return Text("Has error");
+          // }
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
               child: CircularProgressIndicator(),
@@ -106,22 +98,37 @@ class _MainChatPageState extends State<MainChatPage> {
           }
           if (snapshot.hasData) {
             var data;
+
+            // if (snapshot.data!.docs.length >= 1)
             return Column(
               children: [
                 Expanded(
-                  //     child: ListView(
-                  //   reverse: true,
-                  //   children:
-                  //       snapshot.data!.docs.map((DocumentSnapshot document) {
-                  //     data = document.data()!;
-                  //     return Text("data");
-                  //   }),
-                  // )
                   child: ListView.builder(
-                      itemCount: snapshot.data.docs.length,
-                      itemBuilder: ((context, index) => Row(
+                      reverse: true,
+                      itemCount: snapshot.data!.docs.length,
+                      itemBuilder: ((context, index) => Column(
+                            crossAxisAlignment: snapshot.data!.docs[index]
+                                        ['uid'] ==
+                                    widget.uid_receiver
+                                ? CrossAxisAlignment.start
+                                : CrossAxisAlignment.end,
                             children: [
-                              Text(snapshot.data.docs[index]['msg']),
+                              Container(
+                                  margin: EdgeInsets.only(top: 10, right: 10),
+                                  padding: EdgeInsets.only(right: 10, left: 10),
+                                  decoration: BoxDecoration(
+                                      color: (Colors.blue),
+                                      borderRadius: BorderRadius.circular(10)),
+                                  child: Text(
+                                    snapshot.data!.docs[index]['msg'],
+                                    style: TextStyle(
+                                        color: Colors.white, fontSize: 16),
+                                  )),
+                              if (snapshot.data!.docs[index]['createdOn'] !=
+                                  null)
+                                Text(DateFormat('hh:mm a').format(snapshot
+                                    .data!.docs[index]['createdOn']!
+                                    .toDate()))
                             ],
                           ))),
                 ),
@@ -149,30 +156,12 @@ class _MainChatPageState extends State<MainChatPage> {
           return Text("Chat Page");
         },
       ),
-      // body: Row(
-      //   children: [
-      //     CircleAvatar(
-      //       backgroundImage: AssetImage('assets/images/goku.jpg'),
-      //     ),
-      //     Container(
-      //         padding: EdgeInsets.all(10),
-      //         margin: EdgeInsets.symmetric(vertical: 10),
-      //         constraints: BoxConstraints(
-      //           maxWidth: MediaQuery.of(context).size.width * 0.8,
-      //         ),
-      //         decoration: BoxDecoration(
-      //             color: Colors.blue, borderRadius: BorderRadius.circular(15)),
-      //         child: Text(
-      //             "djaanjncajncanskcn ajsndjna nsjcnajnjsnjancjnajsndjnajnata")),
-      //     Text("hello")
-      //   ],
-      // ),
     );
   }
 
-  send_message(String text) {
+  send_message(String text) async {
     if (text == '') return;
-    FirebaseFirestore.instance
+    await FirebaseFirestore.instance
         .collection('chats')
         .doc(chatid)
         .collection('messages')
@@ -181,6 +170,10 @@ class _MainChatPageState extends State<MainChatPage> {
       'uid': userid,
       'msg': text
     }).then((value) {
+      // FirebaseFirestore.instance
+      //     .collection('chats')
+      //     .doc(chatid)
+      //     .update({'lastmsg': value.id});
       _message.text = '';
     });
   }
